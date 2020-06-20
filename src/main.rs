@@ -1,3 +1,9 @@
+mod app;
+
+use crate::app::Application;
+
+/// BCDice IRC GUIのメイン処理。
 fn main() {
-    println!("Hello, world!");
+    let app = Application::new();
+    app.run();
 }
