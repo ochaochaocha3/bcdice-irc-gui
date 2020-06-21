@@ -18,3 +18,7 @@ features = ["v2_44"]
 
 [dependencies.glib]
 version = ""
+features = ["v2_44"]
+
+[dependencies.clap]
+version = "^2.33"

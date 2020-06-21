@@ -7,6 +7,8 @@ extern crate gtk;
 use gio::prelude::*;
 use gtk::prelude::*;
 
+extern crate clap;
+
 mod irc_bot;
 mod signal_handler;
 mod widget;
@@ -33,6 +35,11 @@ pub fn run() {
         setup_actions(app, &widgets);
         setup_accelerators(app);
         setup_app_menu(app);
+
+        {
+            let mut w = widgets.borrow_mut();
+            put_version_number_to_version_label(&mut w.bcdice_version_label);
+        }
 
         connect_signals(&widgets, &status_bar_context_ids, &irc_bot_config);
 
@@ -69,6 +76,11 @@ fn setup_app_menu(app: &gtk::Application) {
         .expect("Couldn't get app_menu");
 
     app.set_app_menu(Some(&app_menu));
+}
+
+/// バージョン情報ラベルにバージョン番号を入れる。
+fn put_version_number_to_version_label(label: &mut gtk::Label) {
+    label.set_text(&format!("BCDice IRC GUI v{}", clap::crate_version!()));
 }
 
 /// シグナルに対応するハンドラを接続する。
