@@ -13,7 +13,7 @@ glib = { version = "", features = ["v2_44"] }
 clap = "^2.33"
 tonic = "^0.2"
 prost = "^0.6"
-tokio = { version = "0.2", features = ["macros"] }
+tokio = { version = "0.2", features = ["full"] }
 
 [build-dependencies]
 tonic-build = "^0.2"
