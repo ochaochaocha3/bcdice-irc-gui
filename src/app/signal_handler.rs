@@ -7,17 +7,32 @@ extern crate gtk;
 // use gio::prelude::*;
 use gtk::prelude::*;
 
-use crate::app::{irc_bot, WidgetSetRef};
+extern crate tokio;
+use tokio::sync::mpsc;
+
+use crate::app::{irc_bot, AppEvent, WidgetSetRef};
 
 type SignalHandlerIdOptionRef = Rc<RefCell<Option<glib::SignalHandlerId>>>;
 
 #[derive(Default)]
 pub struct SignalHandlerIdSet {
+    pub main_window_destroy: SignalHandlerIdOptionRef,
     pub hostname_entry_changed: SignalHandlerIdOptionRef,
     pub port_spin_button_value_changed: SignalHandlerIdOptionRef,
     pub nick_entry_changed: SignalHandlerIdOptionRef,
     pub channel_entry_changed: SignalHandlerIdOptionRef,
     pub connect_disconnect_button_clicked: SignalHandlerIdOptionRef,
+}
+
+pub fn connect_main_window_destroy(
+    widgets: &WidgetSetRef,
+    send: &mut mpsc::UnboundedSender<AppEvent>,
+) -> glib::SignalHandlerId {
+    let w = widgets.borrow();
+    let send = send.clone();
+    w.main_window.connect_destroy(move |_| {
+        send.send(AppEvent::StopReceiver).unwrap_or_default();
+    })
 }
 
 /// ホスト名欄が変更されたときの処理を登録する。

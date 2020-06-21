@@ -8,4 +8,15 @@
       </item>
     </section>
   </menu>
+  <menu id="menu_bar">
+    <submenu>
+      <attribute name="label" translatable="yes">通信</attribute>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">バージョン取得</attribute>
+          <attribute name="action">app.rpc_version</attribute>
+        </item>
+      </section>
+    </submenu>
+  </menu>
 </interface>
