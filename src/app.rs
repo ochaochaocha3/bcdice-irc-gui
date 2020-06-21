@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 extern crate gio;
+extern crate glib;
 extern crate gtk;
 use gio::prelude::*;
 use gtk::prelude::*;
@@ -47,13 +48,10 @@ pub fn run() {
 /// アプリケーションにアクションを登録する。
 fn setup_actions(app: &gtk::Application, widgets: &WidgetSetRef) {
     let quit_action = gio::SimpleAction::new("quit", None);
-    {
-        let widgets = widgets.clone();
-        quit_action.connect_activate(move |_, _| {
-            let w = widgets.borrow();
-            w.main_window.destroy();
-        });
-    }
+    quit_action.connect_activate(glib::clone!(@strong widgets => move |_, _| {
+        let w = widgets.borrow();
+        w.main_window.destroy();
+    }));
 
     app.add_action(&quit_action);
 }
