@@ -1,0 +1,3 @@
+[submodule "vendor/bcdice-irc-proto"]
+	path = vendor/bcdice-irc-proto
+	url = https://github.com/bcdice/bcdice-irc-proto.git
