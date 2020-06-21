@@ -18,13 +18,17 @@ pub fn run() {
     application.connect_activate(move |app| {
         let widgets = {
             let glade_src = include_str!("bcdice-irc.glade");
-            WidgetSetRef::create(glade_src, &app)
+            WidgetSetRef::create(glade_src, app)
         };
 
         let status_bar_context_ids = {
             let w = widgets.borrow();
             StatusBarContextIDSet::new(&w.status_bar)
         };
+
+        setup_actions(app, &widgets);
+        setup_accelerators(app);
+        setup_app_menu(app);
 
         connect_signals(&widgets, &status_bar_context_ids, &irc_bot_config);
 
@@ -35,6 +39,35 @@ pub fn run() {
     });
 
     application.run(&[]);
+}
+
+/// アプリケーションにアクションを登録する。
+fn setup_actions(app: &gtk::Application, widgets: &WidgetSetRef) {
+    let quit_action = gio::SimpleAction::new("quit", None);
+    {
+        let widgets = widgets.clone();
+        quit_action.connect_activate(move |_, _| {
+            let w = widgets.borrow();
+            w.main_window.destroy();
+        });
+    }
+
+    app.add_action(&quit_action);
+}
+
+/// アクセラレータを用意する。
+fn setup_accelerators(app: &gtk::Application) {
+    app.set_accels_for_action("app.quit", &["<Primary>Q"]);
+}
+
+/// アプリケーションメニューを用意する。
+fn setup_app_menu(app: &gtk::Application) {
+    let menu_builder = gtk::Builder::new_from_string(include_str!("menu.xml"));
+    let app_menu: gio::Menu = menu_builder
+        .get_object("app_menu")
+        .expect("Couldn't get app_menu");
+
+    app.set_app_menu(Some(&app_menu));
 }
 
 /// シグナルに対応するハンドラを接続する。
@@ -70,7 +103,7 @@ fn connect_signals(
 /// ウィジェットの集合
 pub struct WidgetSet {
     /// メインウィンドウ
-    pub main_window: gtk::Window,
+    pub main_window: gtk::ApplicationWindow,
 
     /// プリセットコンボボックス
     pub preset_combo_box: gtk::ComboBox,
