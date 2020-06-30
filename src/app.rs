@@ -61,8 +61,8 @@ pub fn run() {
         setup_menus(app);
 
         {
-            let mut w = widgets.borrow_mut();
-            put_version_number_to_version_label(&mut w.bcdice_version_label);
+            let w = widgets.borrow();
+            put_version_number_to_version_label(&w.bcdice_version_label);
         }
 
         connect_signals(
@@ -174,7 +174,7 @@ fn setup_menus(app: &gtk::Application) {
 }
 
 /// バージョン情報ラベルにバージョン番号を入れる。
-fn put_version_number_to_version_label(label: &mut gtk::Label) {
+fn put_version_number_to_version_label(label: &gtk::Label) {
     label.set_text(&format!("BCDice IRC GUI v{}", clap::crate_version!()));
 }
 
