@@ -109,42 +109,53 @@ fn setup_actions(
 ) {
     let quit_action = gio::SimpleAction::new("quit", None);
     quit_action.connect_activate(glib::clone!(@strong widgets => move |_, _| {
-        let w = widgets.borrow();
-        w.main_window.destroy();
+        quit(&widgets);
     }));
 
     let rpc_version_action = gio::SimpleAction::new("rpc_version", None);
     rpc_version_action.connect_activate(glib::clone!(@strong send => move |_, _| {
-        let send = send.clone();
-        tokio::spawn(async move {
-            let client = BcDiceIrcServiceClient::connect(RPC_URL).await;
-            let mut c = match client {
-                Err(e) => {
-                    println!("RPC connection error: {}", e);
-                    return;
-                }
-                Ok(c) => c,
-            };
-
-            let request = tonic::Request::new(VersionRequest {});
-            let response = c.version(request).await;
-            let r = match response {
-                Err(e) => {
-                    println!("Couldn't get version: {}", e);
-                    return;
-                }
-                Ok(r) => r.into_inner(),
-            };
-
-            send.send(AppEvent::Version {
-                bcdice_irc: r.bcdice_irc,
-                bcdice: r.bcdice,
-            }).unwrap_or_default();
-        });
+        rpc_version(&send);
     }));
 
     app.add_action(&quit_action);
     app.add_action(&rpc_version_action);
+}
+
+/// 終了メニュー項目の処理。
+fn quit(widgets: &WidgetSetRef) {
+    let w = widgets.borrow();
+    w.main_window.destroy();
+}
+
+/// バージョン情報取得メニュー項目の処理。
+fn rpc_version(send: &mpsc::UnboundedSender<AppEvent>) {
+    let send = send.clone();
+    tokio::spawn(async move {
+        let client = BcDiceIrcServiceClient::connect(RPC_URL).await;
+        let mut c = match client {
+            Err(e) => {
+                println!("RPC connection error: {}", e);
+                return;
+            }
+            Ok(c) => c,
+        };
+
+        let request = tonic::Request::new(VersionRequest {});
+        let response = c.version(request).await;
+        let r = match response {
+            Err(e) => {
+                println!("Couldn't get version: {}", e);
+                return;
+            }
+            Ok(r) => r.into_inner(),
+        };
+
+        send.send(AppEvent::Version {
+            bcdice_irc: r.bcdice_irc,
+            bcdice: r.bcdice,
+        })
+        .unwrap_or_default();
+    });
 }
 
 /// アクセラレータを用意する。
